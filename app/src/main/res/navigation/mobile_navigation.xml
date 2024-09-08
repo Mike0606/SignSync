@@ -3,23 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_text">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.sih.signsync.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_text"
+        android:name="com.sih.signsync.ui.text.TextFragment"
+        android:label="Text"
+        tools:layout="@layout/fragment_text" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.sih.signsync.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_speech"
+        android:name="com.sih.signsync.ui.speech.SpeechFragment"
+        android:label="Speech"
+        tools:layout="@layout/fragment_speech" />
 
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.sih.signsync.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
 </navigation>

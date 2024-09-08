@@ -26,7 +26,7 @@ def build_squares(img):
 
 def try_camera_indices():
     for i in range(5):
-        cam = cv2.VideoCapture(i)
+        cam = cv2.VideoCapture(i, cv2.CAP_DSHOW)  # Use DirectShow as the backend
         if cam.isOpened():
             print(f"Camera found at index {i}")
             return cam

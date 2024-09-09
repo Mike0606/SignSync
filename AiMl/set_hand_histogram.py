@@ -57,6 +57,12 @@ def get_hand_hist():
         img = cv2.resize(img, (800, 600))
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
+        # Define skin color range in HSV space
+        lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+        upper_skin = np.array([20, 255, 255], dtype=np.uint8)
+        mask = cv2.inRange(hsv, lower_skin, upper_skin)
+        mask = cv2.GaussianBlur(mask, (5, 5), 0)
+
         keypress = cv2.waitKey(1)
         if keypress == ord('c'):
             if imgCrop is not None:
@@ -69,14 +75,22 @@ def get_hand_hist():
             break
         if not flagPressedS:
             imgCrop = build_squares(img)
+        
         if len(hist_list) > 0:
             dst = cv2.calcBackProject([hsv], [0, 1], hist_list[-1], [0, 180, 0, 256], 1)
             disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
             cv2.filter2D(dst, -1, disc, dst)
             blur = cv2.GaussianBlur(dst, (11, 11), 0)
             blur = cv2.medianBlur(blur, 15)
-            ret, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            thresh = cv2.merge((thresh, thresh, thresh))
+
+            # Use mask for skin color and adaptive thresholding
+            thresh = cv2.adaptiveThreshold(mask, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                           cv2.THRESH_BINARY, 11, 2)
+
+            # Invert the thresholded image if necessary
+            thresh = cv2.bitwise_not(thresh)
+
+            # Show the thresholded image
             cv2.imshow("Thresh", thresh)
         cv2.imshow("Set hand histogram", img)
 

@@ -3,32 +3,35 @@ import numpy as np
 import pickle
 
 def build_squares(img):
-    x, y, w, h = 420, 140, 10, 10
-    d = 10
+    x, y, w, h = 200, 100, 30, 30  # Square size and position
+    d = 15  # Distance between squares
     imgCrop = None
     crop = None
-    for i in range(10):
-        for j in range(5):
+    for i in range(8):  # Rows
+        for j in range(6):  # Columns
             if imgCrop is None:
                 imgCrop = img[y:y+h, x:x+w]
             else:
                 imgCrop = np.hstack((imgCrop, img[y:y+h, x:x+w]))
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 1)
+            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)  # Draw squares
             x += w + d
         if crop is None:
             crop = imgCrop
         else:
             crop = np.vstack((crop, imgCrop))
         imgCrop = None
-        x = 420
+        x = 200  # Reset x after each row
         y += h + d
     return crop
 
 def try_camera_indices():
-    for i in range(5):
-        cam = cv2.VideoCapture(i, cv2.CAP_DSHOW)  # Use DirectShow as the backend
+    for i in range(5):  # Loop through camera indices
+        cam = cv2.VideoCapture(i)
         if cam.isOpened():
             print(f"Camera found at index {i}")
+            # Set frame dimensions
+            cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
             return cam
         cam.release()
     print("Error: No available camera found.")
@@ -40,9 +43,9 @@ def get_hand_hist():
         return
 
     x, y, w, h = 300, 100, 300, 300
-    flagPressedC, flagPressedS = False, False
+    flagPressedS = False
     imgCrop = None
-    hist_list = []  # List to store multiple histograms
+    hist_list = []  # Store multiple histograms
 
     while True:
         ret, img = cam.read()
@@ -51,7 +54,7 @@ def get_hand_hist():
             break
 
         img = cv2.flip(img, 1)
-        img = cv2.resize(img, (640, 480))
+        img = cv2.resize(img, (800, 600))
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         keypress = cv2.waitKey(1)
@@ -60,7 +63,7 @@ def get_hand_hist():
                 hsvCrop = cv2.cvtColor(imgCrop, cv2.COLOR_BGR2HSV)
                 hist = cv2.calcHist([hsvCrop], [0, 1], None, [180, 256], [0, 180, 0, 256])
                 cv2.normalize(hist, hist, 0, 255, cv2.NORM_MINMAX)
-                hist_list.append(hist)  # Add histogram to list
+                hist_list.append(hist)  # Add to list
         elif keypress == ord('s'):
             flagPressedS = True
             break
@@ -80,7 +83,7 @@ def get_hand_hist():
     cam.release()
     cv2.destroyAllWindows()
     
-    # Save all histograms
+    # Save histograms
     with open("histograms.pkl", "wb") as f:
         pickle.dump(hist_list, f)
 

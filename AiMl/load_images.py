@@ -1,59 +1,80 @@
 import cv2
 from glob import glob
 import numpy as np
-import random
 from sklearn.utils import shuffle
 import pickle
 import os
 
 def pickle_images_labels():
     images_labels = []
-    images = glob("gestures/*/*.jpg")
+    # Correct glob pattern to recursively find all .jpg files
+    images = glob("gestures/**/*.jpg", recursive=True)
     images.sort()
     for image in images:
         print(image)
-        label = image[image.find(os.sep)+1: image.rfind(os.sep)]
+        # Extract label based on the directory name
+        label = image.split(os.sep)[-2]  # Assumes label is the second last directory name
         img = cv2.imread(image, 0)
         images_labels.append((np.array(img, dtype=np.uint8), int(label)))
     return images_labels
 
+# Load images and labels
 images_labels = pickle_images_labels()
-images_labels = shuffle(shuffle(shuffle(shuffle(images_labels))))
-images, labels = zip(*images_labels)
-print("Length of images_labels", len(images_labels))
 
-train_images = images[:int(5/6*len(images))]
-print("Length of train_images", len(train_images))
+# Shuffle the dataset
+images_labels = shuffle(images_labels)
+
+# Unpack into images and labels
+images, labels = zip(*images_labels)
+total_samples = len(images_labels)
+print(f"Total samples: {total_samples}")
+
+# Define split ratios
+train_ratio = 0.7
+val_ratio = 0.15
+test_ratio = 0.15
+
+# Calculate indices for splitting
+train_idx = int(train_ratio * total_samples)
+val_idx = int((train_ratio + val_ratio) * total_samples)
+
+# Split the dataset into training, validation, and testing sets
+train_images, train_labels = images[:train_idx], labels[:train_idx]
+val_images, val_labels = images[train_idx:val_idx], labels[train_idx:val_idx]
+test_images, test_labels = images[val_idx:], labels[val_idx:]
+
+# Save the datasets as pickle files
 with open("train_images.pkl", "wb") as f:
     pickle.dump(train_images, f)
-del train_images
-
-train_labels = labels[:int(5/6*len(labels))]
-print("Length of train_labels", len(train_labels))
 with open("train_labels.pkl", "wb") as f:
     pickle.dump(train_labels, f)
-del train_labels
 
-test_images = images[int(5/6*len(images)):int(11/12*len(images))]
-print("Length of test_images", len(test_images))
-with open("test_images.pkl", "wb") as f:
-    pickle.dump(test_images, f)
-del test_images
-
-test_labels = labels[int(5/6*len(labels)):int(11/12*len(labels))]
-print("Length of test_labels", len(test_labels))
-with open("test_labels.pkl", "wb") as f:
-    pickle.dump(test_labels, f)
-del test_labels
-
-val_images = images[int(11/12*len(images)):]
-print("Length of val_images", len(val_images))
 with open("val_images.pkl", "wb") as f:
     pickle.dump(val_images, f)
-del val_images
-
-val_labels = labels[int(11/12*len(labels)):]
-print("Length of val_labels", len(val_labels))
 with open("val_labels.pkl", "wb") as f:
     pickle.dump(val_labels, f)
-del val_labels
+
+with open("test_images.pkl", "wb") as f:
+    pickle.dump(test_images, f)
+with open("test_labels.pkl", "wb") as f:
+    pickle.dump(test_labels, f)
+
+print(f"Training set: {len(train_images)} images")
+print(f"Validation set: {len(val_images)} images")
+print(f"Test set: {len(test_images)} images")
+
+
+# Define file paths
+file_paths = [
+    "train_images.pkl",
+    "train_labels.pkl",
+    "val_images.pkl",
+    "val_labels.pkl",
+    "test_images.pkl",
+    "test_labels.pkl"
+]
+
+# Print the sizes of each pickle file
+for file_path in file_paths:
+    size = os.path.getsize(file_path)
+    print(f"Size of {file_path}: {size} bytes")

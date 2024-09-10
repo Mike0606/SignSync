@@ -31,9 +31,18 @@ class MainActivity : AppCompatActivity() {
     lateinit var removeGalleryPhoto : ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        val appBarConfiguration = AppBarConfiguration(
+            setOf(R.id.navigation_text, R.id.navigation_speech)
+        )
+
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        binding.navView.setupWithNavController(navController)
 
         val buttonCam = binding.buttonCam
         removeCameraPhoto = binding.removeImageCam
